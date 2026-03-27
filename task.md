@@ -1,0 +1,29 @@
+# Tasks
+
+- [x] Planning & Documentation [x]
+    - [x] Create initial task list
+    - [x] Create Implementation Plan
+    - [x] Define Project Scope
+- [x] Backend Setup [x]
+    - [x] Initialize Node.js project
+    - [x] Set up Express server
+    - [x] Configure Firebase Admin SDK (Firestore + Storage)
+- [x] Frontend Setup [x]
+    - [x] Initialize React/Vite project
+    - [x] Implement Dashboard UI
+    - [x] Add Video/Podcast Upload (supports up to 30 mins)
+    - [x] Implement Download logic
+- [x] AI Integration [x]
+    - [x] Integrate Whisper API for transcription
+    - [x] Implement Translation pipeline (Google Translate)
+    - [x] Integrate ElevenLabs (Scale Plan) for voice cloning
+    - [x] Implement Multilingual Export naming (video_es.mp4, etc.)
+    - [x] Create ElevenLabs Integration Guide
+- [x] Video Processing [x]
+    - [x] Implement Audio extraction with FFmpeg
+    - [x] Implement Voice & Video sync
+    - [x] Generate SRT/Subtitles
+- [ ] Deployment & MVP [ ]
+    - [ ] Deploy backend (Vercel/DigitalOcean)
+    - [ ] Deploy frontend (Firebase Hosting/Vercel)
+    - [ ] Final end-to-end testing

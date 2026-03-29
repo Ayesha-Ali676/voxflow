@@ -15,13 +15,13 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: { fileSize: 500 * 1024 * 1024 } // 500MB limit for 30min video
 });
 
 router.post('/upload', upload.single('video'), uploadVideo);
-router.get('/:videoId', getProjectStatus);
 router.get('/user/:userId', getUserProjects);
+router.get('/:videoId', getProjectStatus);
 
 module.exports = router;

@@ -12,12 +12,12 @@ const path = require('path');
  */
 const startDubbingJob = async (videoPath, targetLanguage, sourceLanguage = 'auto') => {
   console.log(`🎬 Starting ElevenLabs Dubbing Job for: ${videoPath} (${targetLanguage})`);
-  
+
   const formData = new FormData();
   formData.append('file', fs.createReadStream(videoPath));
   formData.append('name', `Dub_${path.basename(videoPath)}_${Date.now()}`);
   formData.append('target_lang', targetLanguage);
-  
+
   if (sourceLanguage !== 'auto') {
     formData.append('source_lang', sourceLanguage);
   }
@@ -56,9 +56,9 @@ const getDubbingStatus = async (dubbingId) => {
  */
 const downloadDubbedFile = async (dubbingId, languageCode, outputPath) => {
   console.log(`📥 Downloading dubbed file (${languageCode}) for job ${dubbingId}...`);
-  
+
   const response = await axios.get(
-    `https://api.elevenlabs.io/v1/dubbing/${dubbingId}/video/${languageCode}`,
+    `https://api.elevenlabs.io/v1/dubbing/${dubbingId}/audio/${languageCode}`,
     {
       headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY },
       responseType: 'stream',

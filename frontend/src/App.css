@@ -60,7 +60,8 @@
   transition: all 0.2s;
 }
 
-.nav-item:hover, .nav-item.active {
+.nav-item:hover,
+.nav-item.active {
   background: rgba(255, 255, 255, 0.05);
   color: var(--text);
 }
@@ -219,7 +220,7 @@
   align-items: center;
   gap: 12px;
   padding: 6px 15px;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 30px;
   border: 1px solid var(--border);
 }
@@ -240,7 +241,7 @@
   right: 0;
   width: 10px;
   height: 10px;
-  background: #666; /* Offline */
+  background: #666;
   border: 2px solid var(--bg);
   border-radius: 50%;
 }
@@ -432,7 +433,6 @@
   padding: 10px 12px;
   border-radius: 8px;
   font-size: 0.9rem;
- 
   transition: all 0.2s;
 }
 
@@ -473,7 +473,7 @@
 .status-timeline::before {
   content: '';
   position: absolute;
-  top: 18px; /* Middle of the 36px circle */
+  top: 18px;
   left: 30px;
   right: 30px;
   height: 2px;
@@ -526,7 +526,7 @@
 /* Progress Area */
 .progress-bar-wrapper {
   height: 6px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   margin-bottom: 15px;
   overflow: hidden;
@@ -548,6 +548,45 @@
 .status-text {
   color: var(--secondary);
   font-weight: 500;
+}
+
+/* Download Section */
+.download-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.download-section h4 {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin-bottom: 15px;
+}
+
+.download-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px var(--primary-glow);
+}
+
+.download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--primary-glow);
 }
 
 /* Auth Modal Styling */
@@ -694,4 +733,6 @@
   cursor: pointer;
 }
 
-.w-full { width: 100%; }
+.w-full {
+  width: 100%;
+}

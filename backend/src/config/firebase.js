@@ -32,11 +32,20 @@ if (!admin.apps.length) {
     });
     console.log("✅ Firebase Admin initialized using environment variables.");
   } else {
-    throw new Error("❌ No Firebase credentials found (JSON or ENV).");
+    console.warn("⚠️  No Firebase credentials found (JSON or ENV). Firebase will not be initialized.");
   }
 }
 
-const db = admin.firestore();
-const bucket = admin.storage().bucket();
+let db = null;
+let bucket = null;
+
+try {
+  if (admin.apps.length > 0) {
+    db = admin.firestore();
+    bucket = admin.storage().bucket();
+  }
+} catch (error) {
+  console.warn("⚠️  Could not initialize Firestore or Storage.", error.message);
+}
 
 module.exports = { admin, db, bucket };

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Upload, Video, Globe, Headphones, CheckCircle, Loader2, Download, 
-  AlertCircle, LayoutDashboard, Folder, Library, BarChart3, Settings, 
+import {
+  Upload, Video, Globe, Headphones, CheckCircle, Loader2, Download,
+  AlertCircle, LayoutDashboard, Folder, Library, BarChart3, Settings,
   Search, Bell, User, PlusCircle, Play, Sliders, ChevronDown
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
@@ -87,6 +87,9 @@ function App() {
   const handleUpload = async () => {
     if (!file) return;
     setIsUploading(true);
+    setStatus(null);
+    setProjectData(null);
+    setProjectId(null);
     const formData = new FormData();
     formData.append('video', file);
     formData.append('languages', JSON.stringify(languages));
@@ -113,8 +116,15 @@ function App() {
           const response = await axios.get(`${API_BASE_URL}/videos/${projectId}`);
           setStatus(response.data.status);
           setProjectData(response.data);
-          if (response.data.status === 'completed') clearInterval(interval);
-        } catch (error) {}
+          if (response.data.status === 'completed') {
+            clearInterval(interval);
+            toast.success('Dubbing completed! Your video is ready to download.');
+          }
+          if (response.data.status === 'failed') {
+            clearInterval(interval);
+            toast.error('Processing failed. Please try again.');
+          }
+        } catch (error) { }
       }, 3000);
     }
     return () => clearInterval(interval);
@@ -123,7 +133,6 @@ function App() {
   return (
     <div className="app-shell">
       <Toaster position="top-right" />
-      
 
       {/* Main Content */}
       <main className="main-content">
@@ -170,7 +179,7 @@ function App() {
                 <input {...getInputProps()} />
                 <div className="plus-btn"><PlusCircle size={28} /></div>
                 <p className="plus-text">ADD VIDEO</p>
-                <p className="sub-text">Click or drag your video file here<br/>(MP4, MOV, max 5GB)</p>
+                <p className="sub-text">Click or drag your video file here<br />(MP4, MOV, max 5GB)</p>
               </div>
               {file && (
                 <div className="file-preview-card glass">
@@ -199,7 +208,7 @@ function App() {
                 <label>Target (Select Multiple)</label>
                 <div className={`multi-select-dropdown glass ${isDropdownOpen ? 'open' : ''}`} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                   <div className="selected-tags">
-                    {languages.length === 0 ? <span className="placeholder">Select languages...</span> : 
+                    {languages.length === 0 ? <span className="placeholder">Select languages...</span> :
                       languages.map(code => (
                         <div key={code} className="tag glass">
                           <span>{SUPPORTED_LANGUAGES.find(l => l.code === code)?.flag}</span>
@@ -212,22 +221,22 @@ function App() {
                     }
                   </div>
                   <ChevronDown size={16} className={`arrow ${isDropdownOpen ? 'up' : ''}`} />
-                  
+
                   <AnimatePresence>
                     {isDropdownOpen && (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         className="dropdown-menu glass"
                       >
                         {SUPPORTED_LANGUAGES.map(lang => (
-                          <div 
-                            key={lang.code} 
+                          <div
+                            key={lang.code}
                             className={`dropdown-item ${languages.includes(lang.code) ? 'selected' : ''}`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setLanguages(prev => 
+                              setLanguages(prev =>
                                 prev.includes(lang.code) ? prev.filter(l => l !== lang.code) : [...prev, lang.code]
                               );
                             }}
@@ -253,7 +262,7 @@ function App() {
               <h3>PROJECT STATUS & PROGRESS</h3>
               <p>Video: <span>{file ? file.name : 'No project active'}</span> (ID: {projectId || 'VF-XXXXX'})</p>
             </div>
-            
+
             <div className="status-timeline">
               <TimelineStep number="1" label="Analyzing" active={status === 'uploaded'} done={['dubbing', 'downloading', 'completed'].some(s => status?.includes(s))} />
               <TimelineStep number="2" label="AI Dubbing" active={status?.includes('dubbing')} done={['downloading', 'completed'].some(s => status?.includes(s))} />
@@ -263,8 +272,8 @@ function App() {
 
             <div className="progress-container">
               <div className="progress-bar-wrapper">
-                <motion.div 
-                  className="progress-fill" 
+                <motion.div
+                  className="progress-fill"
                   initial={{ width: 0 }}
                   animate={{ width: `${calculateProgress()}%` }}
                 />
@@ -273,6 +282,25 @@ function App() {
                 <span className="status-text">{status ? status.replace(/_/g, ' ').toUpperCase() : 'Waiting for input...'}</span>
                 <span className="percent">{calculateProgress()}%</span>
               </div>
+
+              {status === 'completed' && projectData?.dubbedVersions && (
+                <div className="download-section">
+                  <h4>Download Dubbed Videos</h4>
+                  <div className="download-buttons">
+                    {Object.entries(projectData.dubbedVersions).map(([lang, path]) => (
+                      <a
+                        key={lang}
+                        href={`http://localhost:5000${path}`}
+                        download
+                        className="download-btn"
+                      >
+                        <Download size={16} />
+                        Download {lang.toUpperCase()} Version
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -297,8 +325,8 @@ function RecentProjectItem({ name, id, active }) {
         <p className="name">{name}</p>
         <p className="id">ID: {id}</p>
         <div className="item-actions">
-           <Headphones size={14} className="icon-btn" />
-           <Sliders size={14} className="icon-btn" />
+          <Headphones size={14} className="icon-btn" />
+          <Sliders size={14} className="icon-btn" />
         </div>
       </div>
       <div className={`status-toggle ${active ? 'on' : ''}`}></div>

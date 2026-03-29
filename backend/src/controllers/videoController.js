@@ -44,7 +44,7 @@ const uploadVideo = async (req, res) => {
     });
 
     const targetLanguages = req.body.languages ? JSON.parse(req.body.languages) : ['es'];
-    
+
     res.status(202).json({
       message: 'Video uploaded successfully. ElevenLabs Dubbing started.',
       videoId
@@ -64,25 +64,25 @@ const processVideoPipeline = async (videoId, tempVideoPath, extension, targetLan
     const projectRef = db.collection('projects').doc(videoId);
     const outputsDir = path.join(OUTPUTS_DIR, videoId);
     if (!fs.existsSync(outputsDir)) fs.mkdirSync(outputsDir, { recursive: true });
-    
+
     const dubbedVersions = {};
 
     for (const lang of targetLanguages) {
       await projectRef.update({ status: `dubbing_${lang}_started` });
-      
+
       // 1. Start Dubbing Job
       const dubbingId = await startDubbingJob(tempVideoPath, lang);
-      
+
       // 2. Poll for completion
       let status = 'dubbing';
       let attempts = 0;
       const maxAttempts = 240; // 20 minutes max (5s * 240)
-      
+
       while (status !== 'dubbed' && status !== 'completed' && attempts < maxAttempts) {
         await sleep(5000); // Wait 5 seconds
         status = await getDubbingStatus(dubbingId);
         console.log(`⏳ Job ${dubbingId} status: ${status} (Attempt ${attempts + 1})`);
-        
+
         if (status === 'failed') {
           throw new Error(`ElevenLabs Dubbing failed for language: ${lang}`);
         }
@@ -97,7 +97,7 @@ const processVideoPipeline = async (videoId, tempVideoPath, extension, targetLan
       await projectRef.update({ status: `downloading_${lang}` });
       const finalVideoName = `video_${lang}_${videoId}${extension}`;
       const finalVideoPath = path.join(outputsDir, finalVideoName);
-      
+
       await downloadDubbedFile(dubbingId, lang, finalVideoPath);
 
       // Store local path for download
@@ -106,7 +106,7 @@ const processVideoPipeline = async (videoId, tempVideoPath, extension, targetLan
     }
 
     // 4. Final Update
-    await projectRef.update({ 
+    await projectRef.update({
       status: 'completed',
       dubbedVersions,
       updatedAt: new Date()
@@ -120,6 +120,12 @@ const processVideoPipeline = async (videoId, tempVideoPath, extension, targetLan
       status: 'failed',
       error: error.message
     });
+  } finally {
+    // Always clean up temp file whether success or failure
+    if (fs.existsSync(tempVideoPath)) {
+      fs.unlinkSync(tempVideoPath);
+      console.log(`🗑️ Cleaned up temp file: ${tempVideoPath}`);
+    }
   }
 };
 

@@ -16,12 +16,24 @@ import './App.css';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
-const SUPPORTED_LANGUAGES = [
+const SOURCE_LANGUAGES = [
+  { code: 'en', name: 'English (EN)', flag: '🇺🇸' },
   { code: 'es', name: 'Spanish (ES)', flag: '🇪🇸' },
   { code: 'hi', name: 'Hindi (HI)', flag: '🇮🇳' },
   { code: 'ar', name: 'Arabic (SA)', flag: '🇸🇦' },
   { code: 'fr', name: 'French (FR)', flag: '🇫🇷' },
-  { code: 'de', name: 'German (DE)', flag: '🇩🇪' }
+  { code: 'de', name: 'German (DE)', flag: '🇩🇪' },
+  { code: 'ur', name: 'Urdu (PK)', flag: '🇵🇰' }
+];
+
+const TARGET_LANGUAGES = [
+  { code: 'en', name: 'English (EN)', flag: '🇺🇸' },
+  { code: 'es', name: 'Spanish (ES)', flag: '🇪🇸' },
+  { code: 'hi', name: 'Hindi (HI)', flag: '🇮🇳' },
+  { code: 'ar', name: 'Arabic (SA)', flag: '🇸🇦' },
+  { code: 'fr', name: 'French (FR)', flag: '🇫🇷' },
+  { code: 'de', name: 'German (DE)', flag: '🇩🇪' },
+  { code: 'ur', name: 'Urdu (PK)', flag: '🇵🇰' }
 ];
 
 function App() {
@@ -30,9 +42,11 @@ function App() {
   const [status, setStatus] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [languages, setLanguages] = useState(['es']);
+  const [sourceLanguage, setSourceLanguage] = useState('en');
   const [projectData, setProjectData] = useState(null);
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSourceDropdownOpen, setIsSourceDropdownOpen] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
   const [user, setUser] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -93,6 +107,7 @@ function App() {
     const formData = new FormData();
     formData.append('video', file);
     formData.append('languages', JSON.stringify(languages));
+    formData.append('sourceLanguage', sourceLanguage);
     if (user) formData.append('userId', user.uid);
 
     try {
@@ -197,27 +212,71 @@ function App() {
 
             <div className="glass card language-section">
               <h3>LANGUAGE SELECTION</h3>
+
+              {/* Source Language */}
               <div className="select-group">
-                <label>Source</label>
-                <div className="custom-select glass">
-                  <span>🇺🇸 English (US)</span>
-                  <ChevronDown size={16} />
+                <label>Source Language</label>
+                <div
+                  className={`multi-select-dropdown glass ${isSourceDropdownOpen ? 'open' : ''}`}
+                  onClick={() => { setIsSourceDropdownOpen(!isSourceDropdownOpen); setIsDropdownOpen(false); }}
+                >
+                  <div className="selected-tags">
+                    <div className="tag glass">
+                      <span>{SOURCE_LANGUAGES.find(l => l.code === sourceLanguage)?.flag}</span>
+                      <span style={{ marginLeft: 4, fontSize: '0.8rem' }}>
+                        {SOURCE_LANGUAGES.find(l => l.code === sourceLanguage)?.name}
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronDown size={16} className={`arrow ${isSourceDropdownOpen ? 'up' : ''}`} />
+
+                  <AnimatePresence>
+                    {isSourceDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="dropdown-menu glass"
+                      >
+                        {SOURCE_LANGUAGES.map(lang => (
+                          <div
+                            key={lang.code}
+                            className={`dropdown-item ${sourceLanguage === lang.code ? 'selected' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSourceLanguage(lang.code);
+                              setIsSourceDropdownOpen(false);
+                            }}
+                          >
+                            <span>{lang.flag} {lang.name}</span>
+                            {sourceLanguage === lang.code && <CheckCircle size={14} className="check-icon" />}
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
+
+              {/* Target Languages */}
               <div className="select-group mt-6">
                 <label>Target (Select Multiple)</label>
-                <div className={`multi-select-dropdown glass ${isDropdownOpen ? 'open' : ''}`} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                <div
+                  className={`multi-select-dropdown glass ${isDropdownOpen ? 'open' : ''}`}
+                  onClick={() => { setIsDropdownOpen(!isDropdownOpen); setIsSourceDropdownOpen(false); }}
+                >
                   <div className="selected-tags">
-                    {languages.length === 0 ? <span className="placeholder">Select languages...</span> :
-                      languages.map(code => (
-                        <div key={code} className="tag glass">
-                          <span>{SUPPORTED_LANGUAGES.find(l => l.code === code)?.flag}</span>
-                          <span className="close" onClick={(e) => {
-                            e.stopPropagation();
-                            setLanguages(prev => prev.filter(l => l !== code));
-                          }}>×</span>
-                        </div>
-                      ))
+                    {languages.length === 0
+                      ? <span className="placeholder">Select languages...</span>
+                      : languages.map(code => (
+                          <div key={code} className="tag glass">
+                            <span>{TARGET_LANGUAGES.find(l => l.code === code)?.flag}</span>
+                            <span className="close" onClick={(e) => {
+                              e.stopPropagation();
+                              setLanguages(prev => prev.filter(l => l !== code));
+                            }}>×</span>
+                          </div>
+                        ))
                     }
                   </div>
                   <ChevronDown size={16} className={`arrow ${isDropdownOpen ? 'up' : ''}`} />
@@ -230,14 +289,16 @@ function App() {
                         exit={{ opacity: 0, y: -10 }}
                         className="dropdown-menu glass"
                       >
-                        {SUPPORTED_LANGUAGES.map(lang => (
+                        {TARGET_LANGUAGES.map(lang => (
                           <div
                             key={lang.code}
                             className={`dropdown-item ${languages.includes(lang.code) ? 'selected' : ''}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               setLanguages(prev =>
-                                prev.includes(lang.code) ? prev.filter(l => l !== lang.code) : [...prev, lang.code]
+                                prev.includes(lang.code)
+                                  ? prev.filter(l => l !== lang.code)
+                                  : [...prev, lang.code]
                               );
                             }}
                           >
@@ -250,6 +311,7 @@ function App() {
                   </AnimatePresence>
                 </div>
               </div>
+
               <button className="confirm-btn mt-6" onClick={handleUpload} disabled={isUploading || languages.length === 0}>
                 {isUploading ? 'PROCESSING...' : 'CONFIRM LANGUAGES'}
               </button>
@@ -285,19 +347,51 @@ function App() {
 
               {status === 'completed' && projectData?.dubbedVersions && (
                 <div className="download-section">
-                  <h4>Download Dubbed Videos</h4>
-                  <div className="download-buttons">
-                    {Object.entries(projectData.dubbedVersions).map(([lang, path]) => (
-                      <a
-                        key={lang}
-                        href={`http://localhost:5000${path}`}
-                        download
-                        className="download-btn"
-                      >
-                        <Download size={16} />
-                        Download {lang.toUpperCase()} Version
-                      </a>
-                    ))}
+                  <h4>Your Dubbed Videos (Subtitles Burned-in)</h4>
+                  <div className="download-language-rows">
+                    {Object.entries(projectData.dubbedVersions).map(([lang, videoPath]) => {
+                      const langInfo = [...SOURCE_LANGUAGES, ...TARGET_LANGUAGES].find(l => l.code === lang);
+                      const subtitlePath = projectData.subtitleVersions?.[lang];
+                      return (
+                        <div key={lang} className="download-lang-row-complex glass">
+                          <div className="lang-info-main">
+                            <span className="lang-label">
+                              {langInfo?.flag} {lang.toUpperCase()}
+                            </span>
+                            <div className="download-buttons">
+                              <a
+                                href={`http://localhost:5000/api/videos/download/${projectData.id}/${lang}`}
+                                download
+                                className="download-btn"
+                              >
+                                <Download size={16} />
+                                Download Video
+                              </a>
+                            </div>
+                          </div>
+                          
+                          {/* Inline Preview with Native WebVTT Subtitles */}
+                          <div className="video-preview-mini">
+                            <video 
+                              src={`http://localhost:5000${videoPath}`} 
+                              controls 
+                              crossOrigin="anonymous"
+                              className="mini-player glass"
+                            >
+                              {subtitlePath && (
+                                <track 
+                                  kind="subtitles" 
+                                  srcLang={lang} 
+                                  src={`http://localhost:5000${subtitlePath}`} 
+                                  label={langInfo?.name || lang.toUpperCase()} 
+                                  default 
+                                />
+                              )}
+                            </video>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

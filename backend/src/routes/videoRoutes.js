@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { uploadVideo, getProjectStatus, getUserProjects } = require('../controllers/videoController');
+const { uploadVideo, getProjectStatus, getUserProjects, downloadProjectFile } = require('../controllers/videoController');
 
 // Multer storage for temporary video files
 const storage = multer.diskStorage({
@@ -22,6 +22,7 @@ const upload = multer({
 
 router.post('/upload', upload.single('video'), uploadVideo);
 router.get('/user/:userId', getUserProjects);
+router.get('/download/:videoId/:lang', downloadProjectFile);
 router.get('/:videoId', getProjectStatus);
 
 module.exports = router;

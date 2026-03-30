@@ -75,6 +75,27 @@ const downloadDubbedFile = async (dubbingId, languageCode, outputPath) => {
 };
 
 /**
+ * Downloads the VTT subtitle file for a dubbed language.
+ * @param {string} dubbingId - The dubbing job ID.
+ * @param {string} languageCode - The language code.
+ * @param {string} outputPath - Local path to save the .vtt file.
+ */
+const downloadSubtitleFile = async (dubbingId, languageCode, outputPath) => {
+  console.log(`📝 Downloading VTT subtitles (${languageCode}) for job ${dubbingId}...`);
+
+  const response = await axios.get(
+    `https://api.elevenlabs.io/v1/dubbing/${dubbingId}/transcripts/${languageCode}/format/webvtt`,
+    {
+      headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY },
+      responseType: 'text',
+    }
+  );
+
+  fs.writeFileSync(outputPath, response.data, 'utf8');
+  console.log(`✅ VTT saved: ${outputPath}`);
+};
+
+/**
  * Legacy stubs for backward compatibility if needed, 
  * but primarily we move to the native workflow.
  */
@@ -87,6 +108,7 @@ module.exports = {
   startDubbingJob,
   getDubbingStatus,
   downloadDubbedFile,
+  downloadSubtitleFile,
   // Legacy stubs to prevent immediate crashes in controller
   transcribeAudio,
   translateText,
